@@ -37,6 +37,7 @@ var display = function() {
     }
     console.log(table.toString());
     console.log("");
+    shopping();
   });
 };
 
@@ -60,7 +61,44 @@ var shopping = function() {
           );
           shopping();
         } else {
-          console.log("Great!");
+          inquirer
+            .prompt({
+              name: "quantity",
+              type: "input",
+              message: "How many would you like to purchase?"
+            })
+            .then(function(answer2) {
+              var quantity = answer2.quantity;
+              if (quantity > res[0].stock_quantity) {
+                console.log(
+                  "Sorry, there are only " +
+                    res[0].stock_quantity +
+                    " of that item left in stock"
+                );
+                shopping();
+              } else {
+                console.log("");
+                console.log(res[0].product_name + " purchased");
+                console.log(quantity + " qty @ $" + res[0].price);
+
+                var newQuantity = res[0].stock_quantity - quantity;
+                connection.query(
+                  "UPDATE products SET stock_quantity = " +
+                    newQuantity +
+                    " WHERE id = " +
+                    res[0].id,
+
+                  function(err, resUpdate) {
+                    if (err) throw err;
+                    console.log("");
+                    console.log("Your order has been placed!");
+                    console.log("thanks for shopping with us!");
+                    console.log("");
+                    connection.end();
+                  }
+                );
+              }
+            });
         }
       });
     });
